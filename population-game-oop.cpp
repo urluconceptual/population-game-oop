@@ -1,82 +1,36 @@
-﻿/*
-Cerinte comune tuturor temelor:
-
-x	implementare in C++ folosind clase
-x	datele membre private
-x	constructori de initializare (cu si fara parametri), constructor de copiere, destructor, operator de atribuire
-x	get, set pentru toate datele membre
-•	ATENTIE: functiile pe care le-am numit mai jos metode (fie ca sunt supraincarcari de operatori, fie altfel de functii),
-pot fi implementate ca functii prieten in loc de metode ale claselor respective, daca se considera ca aceasta alegere este mai naturala;
-x	supraincarcarea operatorilor << si >> pentru iesiri si intrari de obiecte, dupa indicatiile de mai jos, astfel incat sa fie permise
-(si ilustrate in program);
-x	sa existe metode publice prin care se realizeaza citirea si afisarea informațiilor complete a n obiecte, memorarea și afisarea
-acestora.
-x	programul sa aiba un meniu interactiv
-
-Necesar: programul sa nu contina erori de compilare si sa ruleze in CodeBlocks
-
-Tema 16.
-D10 Clasa "individ", avand:     // mediu spre greu
-    - membrii privati:   i (intreg) = pozitia (dintr-un tablou unidimensional de 30 de elemente declarat static in main);
-                         tip (char) = „numele” speciei ('+' sau '0');
-                         varsta (intreg) = varsta (de la 0 la o valoare maxima fixa aleasa de programator);
-                         energie (double) = energia;
-                         viu (unsigned char) = este 1 daca e viu si 0 daca e mort;
-
-    - constructor care primeste ca parametrii pozitia si tipul si initializeaza corespunzator membrii respectivi; varsta se initializeaza
-cu 0, energia cu o valoare fixa aleasa de programator,  viu cu 1;
-
-    - metode private:
-hraneste = creste energia proprie cu o valoare random intre 1 si 10;
-inmulteste = adauga un fiu in stanga sau in dreapta individului daca pozitia este libera (fiul are acelasi tip, varsta este 0, iar energia
-este de doua ori mai mare fata de cea a parintelui)
-ataca = pentru fiecare individ x invecinat si de alt tip, daca energia proprie este mai mare decat energia lui x, din energia proprie se
-scade energia lui x iar x este omorat (i se aplica metoda "moare");
-imbatraneste = creste varsta cu 1; scade energie cu o valoare constanta aleasa de programator; daca a atins o varsta maxima aleasa de
-programator sau daca energia sa a devenit <=0, individul curent este omorat (i se aplica metoda "moare");
-moare = viu devine 0;
-
-    - metode publice:
-actualizare = aplica succesiv metodele: hraneste, inmulteste, ataca, imbatraneste;
-esteviu = returneaza 1 daca viu==1 si 0 altfel;
-gettip = returneaza tipul.
-    Se citesc maxim 30 de indivizi (supraincarcare pentru >> si <<).
-    Realizare meniu cu functia de: citire indivizi (se citeste si numarul de indivizi aici), actualizare, este viu, get tip.
-*/
-
-#include <iostream>
+﻿#include <iostream>
 #include <windows.h>
 #include <algorithm>
 
 using namespace std;
 
-class individ {
+class Individ {
     char tip;
     unsigned char viu;
     int i, varsta;
     double energie;
 
 public:
-//constructor de initializare fara parametri:
-    individ() {
+    //constructor de initializare fara parametri:
+    Individ() {
         tip = '\0';
         i = -1;
         setvarsta(0);
         setenergie(50);
         setviu('1');
     }
-//constructor de initializare cu parametri:
-    individ(int I, char Tip);
-//constructor de initializare cu toti parametri:
-    individ(int I, char Tip, unsigned char viu, int varsta, double energie);
-//constructor de copiere
-    individ(const individ& ob);
-//destructor
-    ~individ() {}
-//operator de atribuire
-    individ& operator=(const individ& ob);
-    individ& operator=(const char tip);
-    individ& operator=(const int i);
+    //constructor de initializare cu parametri:
+    Individ(int I, char Tip);
+    //constructor de initializare cu toti parametri:
+    Individ(int I, char Tip, unsigned char viu, int varsta, double energie);
+    //constructor de copiere
+    Individ(const Individ& ob);
+    //destructor
+    ~Individ() {}
+    //operator de atribuire
+    Individ& operator=(const Individ& ob);
+    Individ& operator=(const char tip);
+    Individ& operator=(const int i);
 
     void actualizare() {
         hraneste();
@@ -90,16 +44,16 @@ public:
             return 1;
         else return 0;
     }
-//get pentru tip:
+    //get pentru tip:
     char gettip() {
         return this->tip;
     }
-//supraincarcare pentru >> si <<:
-    friend istream& operator>> (istream&, individ&);
-    friend ostream& operator<< (ostream&, const individ&);
+    //supraincarcare pentru >> si <<:
+    friend istream& operator>> (istream&, Individ&);
+    friend ostream& operator<< (ostream&, const Individ&);
 
 private:
-//getteri pentru restul datelor membre:
+    //getteri pentru restul datelor membre:
     unsigned char getviu() {
         return this->viu;
     }
@@ -115,7 +69,7 @@ private:
     double getenergie() {
         return this->energie;
     }
-//setteri pentru toate datele membre:
+    //setteri pentru toate datele membre:
     void settip(const char tip) {
         this->tip = tip;
     }
@@ -151,35 +105,54 @@ private:
 
     void ataca();
 
-    friend class populatie;
+    friend class Populatie;
 };
 
-class populatie {
-    individ v[30];
-public:
-    void meniu();
+class Populatie {
+    Individ v[30];
+protected:
     void citire();
     void actualizeaza();
-    void esteviumeniu();
-    void gettipmeniu();
+    void esteViuMeniu();
+    void getTipMeniu();
     void afisare();
-    bool verificaviata();
-    void actualizeazameniu();
+    bool verificaViata();
+    void actualizeazaMeniu();
+
+    friend class Meniu;
 };
 
-individ::individ(int I, char Tip) : i(I), tip(Tip) {
+class Meniu {
+    static Meniu* instanta;
+    Populatie* p;
+    Meniu() {
+        p = new Populatie;
+    }
+public:
+    static Meniu* getInstanta() {
+        if (instanta == nullptr)
+            instanta = new Meniu;
+        return instanta;
+    }
+    void meniu();
+    void restart();
+};
+
+Meniu* Meniu::instanta = nullptr;
+
+Individ::Individ(int I, char Tip) : i(I), tip(Tip) {
     setvarsta(0);
     setenergie(50);
     setviu('1');
 }
 
-individ::individ(int I, char Tip, unsigned char viu, int varsta, double energie) : i(I), tip(Tip) {
+Individ::Individ(int I, char Tip, unsigned char viu, int varsta, double energie) : i(I), tip(Tip) {
     setvarsta(varsta);
     setenergie(energie);
     setviu(viu);
 }
 
-individ::individ(const individ & ob) {
+Individ::Individ(const Individ& ob) {
     seti(ob.i);
     settip(ob.tip);
     setvarsta(ob.varsta);
@@ -187,7 +160,7 @@ individ::individ(const individ & ob) {
     setviu(ob.viu);
 }
 
-individ& individ::operator=(const individ& ob) {
+Individ& Individ::operator=(const Individ& ob) {
     if (this == &ob)
         return *this;
     else {
@@ -200,7 +173,7 @@ individ& individ::operator=(const individ& ob) {
     return *this;
 }
 
-individ& individ::operator=(const char tip) {
+Individ& Individ::operator=(const char tip) {
     if (this->tip == tip)
         return *this;
     else
@@ -208,7 +181,7 @@ individ& individ::operator=(const char tip) {
     return *this;
 }
 
-individ& individ::operator=(const int i) {
+Individ& Individ::operator=(const int i) {
     if (this->i == i)
         return *this;
     else
@@ -216,10 +189,10 @@ individ& individ::operator=(const int i) {
     return *this;
 }
 
-void individ::inmulteste() {
+void Individ::inmulteste() {
     if (i == 0) {
         if ((*(this + 1)).geti() == -1) {
-            individ aux(i + 1, this->tip);
+            Individ aux(i + 1, this->tip);
             aux.setenergie(this->energie * 2);
             *(this + 1) = aux;
         }
@@ -227,26 +200,26 @@ void individ::inmulteste() {
     else
         if (i == 29) {
             if ((*(this - 1)).geti() == -1) {
-                individ aux(i - 1, this->tip);
+                Individ aux(i - 1, this->tip);
                 aux.setenergie(this->energie * 2);
                 *(this - 1) = aux;
             }
         }
         else
             if ((*(this - 1)).geti() == -1) {
-                individ aux(i - 1, this->tip);
+                Individ aux(i - 1, this->tip);
                 aux.setenergie(this->energie * 2);
                 *(this - 1) = aux;
             }
             else
                 if ((*(this + 1)).geti() == -1) {
-                    individ aux(i + 1, this->tip);
+                    Individ aux(i + 1, this->tip);
                     aux.setenergie(this->energie * 2);
                     *(this + 1) = aux;
                 }
 }
 
-void individ::imbatraneste() {
+void Individ::imbatraneste() {
     varsta++;
     energie -= 20;
     if (varsta > 50 || energie <= 0) {
@@ -254,7 +227,7 @@ void individ::imbatraneste() {
     }
 }
 
-void individ::ataca() {
+void Individ::ataca() {
     if (this->i != 0 && (this - 1)->tip != '\0' && (this - 1)->tip != this->tip && (this - 1)->energie > this->energie) {
         (*(this - 1)).setenergie((this - 1)->energie - this->energie);
         moare();
@@ -265,12 +238,12 @@ void individ::ataca() {
     }
 }
 
-istream& operator>> (istream& in, individ& ob) {
+istream& operator>> (istream& in, Individ& ob) {
     in >> ob.i >> ob.tip;
     return in;
 }
 
-ostream& operator<< (ostream& out, const individ& ob) {
+ostream& operator<< (ostream& out, const Individ& ob) {
     out << "-----------------------------------------------------------\n";
     out << "Pozitia individului: " << ob.i << "\n";
     out << "Numele speciei: " << ob.tip << "\n";
@@ -278,7 +251,7 @@ ostream& operator<< (ostream& out, const individ& ob) {
     return out;
 }
 //citirea a n obiecte:
-void populatie::citire() {
+void Populatie::citire() {
     int n;
     cout << "Numar de indivizi: ";
     cin >> n;
@@ -288,7 +261,7 @@ void populatie::citire() {
     if (rasp == "DA") {
         cout << "Pozitie individ (de la 0 la 29) urmata de specie individ (0 sau +):\n";
         for (int i = 0; i < n; i++) {
-            individ aux;
+            Individ aux;
             cin >> aux;
             v[aux.geti()] = aux;
         }
@@ -302,13 +275,13 @@ void populatie::citire() {
         for (int poz = 0; poz < n; poz++) {
             char tip;
             cin >> tip;
-            individ aux(random[poz], tip);
+            Individ aux(random[poz], tip);
             v[aux.i] = aux;
         }
     }
 }
 //afisarea a n obiecte:
-void populatie::afisare() {
+void Populatie::afisare() {
     HANDLE  hConsole;
     int k;
     hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -324,7 +297,7 @@ void populatie::afisare() {
     SetConsoleTextAttribute(hConsole, 7);
 }
 
-void populatie::actualizeaza() {
+void Populatie::actualizeaza() {
     int aux[30];
     for (int i = 0; i < 30; i++) {
         aux[i] = v[i].i;
@@ -335,7 +308,7 @@ void populatie::actualizeaza() {
     }
 }
 
-void populatie::actualizeazameniu() {
+void Populatie::actualizeazaMeniu() {
     int nr;
     cout << "Cate actualizari doriti sa efectuati? ";
     cin >> nr;
@@ -345,7 +318,7 @@ void populatie::actualizeazameniu() {
     afisare();
 }
 
-void populatie::esteviumeniu() {
+void Populatie::esteViuMeniu() {
     int i;
     cout << "Pozitia individului: ";
     cin >> i;
@@ -358,7 +331,7 @@ void populatie::esteviumeniu() {
             cout << "NU\n";
 }
 
-void populatie::gettipmeniu() {
+void Populatie::getTipMeniu() {
     int i;
     cout << "Pentru ce individ doriti sa stiti tipul? ";
     cin >> i;
@@ -368,7 +341,7 @@ void populatie::gettipmeniu() {
         cout << "Tipul individului " << i << " este " << v[i].gettip() << ".\n";
 }
 
-bool populatie::verificaviata() {
+bool Populatie::verificaViata() {
     int i = 0;
     while (i < 30 && v[i].viu == '0')
         i++;
@@ -379,11 +352,11 @@ bool populatie::verificaviata() {
 }
 
 //meniu interactiv:
-void populatie::meniu() {
+void Meniu::meniu() {
     int optiune;
     cout << endl;
     cout << "--------JOCUL VIETII------------------------------------------------------------------------------\n" << endl;
-    while (verificaviata())
+    while (p->verificaViata())
     {
         cout << "Optiunile sunt:\n" << "   0 -> Renuntare la populatia curenta\n" << "   1 -> Citire indivizi\n" << "   2 -> Actualizare\n" << "   3 -> Este viu?\n" << "   4 -> Get tip\n" << "   5 -> Afiseaza situatia curenta\n";
         cout << "--------------------------------------------------------------------------------------------------\nIntroduceti optiunea: ";
@@ -391,15 +364,15 @@ void populatie::meniu() {
         switch (optiune)
         {
         case 0: return;
-        case 1: citire();
+        case 1: p->citire();
             break;
-        case 2: actualizeazameniu();
+        case 2: p->actualizeazaMeniu();
             break;
-        case 3: esteviumeniu();
+        case 3: p->esteViuMeniu();
             break;
-        case 4: gettipmeniu();
+        case 4: p->getTipMeniu();
             break;
-        case 5: afisare();
+        case 5: p->afisare();
         }
         cout << "--------------------------------------------------------------------------------------------------\n";
     }
@@ -411,27 +384,32 @@ void populatie::meniu() {
     cout << endl;
 }
 
-    int main() {
-       populatie Populatie;
-        Populatie.meniu();
-        cout << "--------------------------------------------------------------------------------------------------\n";
-        cout << "Doriti sa aplicati citire, stocare si afisare a 'Jocului vietii' pentru mai multe populatii? DA/NU\n";
-        string rasp;
-        cin >> rasp;
-        if (rasp == "DA") {
-            populatie P[20];
-            int n;
-            cout << "Cate populatii? ";
-            cin >> n;
-            for (int i = 0; i < n; i++) {
-                P[i].meniu();
-            }
-        }
-        else {
-            HANDLE  hConsole;
-            hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-            SetConsoleTextAttribute(hConsole, 160);
-            cout << "Sesiune de joc incheiata.                                                                           ";
-            SetConsoleTextAttribute(hConsole, 7);
+void Meniu::restart() {
+    delete p;
+    p = new Populatie;
+}
+
+int main() {
+    Meniu* M = Meniu::getInstanta();
+    M->meniu();
+    cout << "--------------------------------------------------------------------------------------------------\n";
+    cout << "Doriti sa aplicati citire, stocare si afisare a 'Jocului vietii' pentru mai multe populatii? DA/NU\n";
+    string rasp;
+    cin >> rasp;
+    if (rasp == "DA") {
+        int n;
+        cout << "Cate populatii? ";
+        cin >> n;
+        for (int i = 0; i < n; i++) {
+            M->restart();
+            M->meniu();
         }
     }
+    else {
+        HANDLE  hConsole;
+        hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+        SetConsoleTextAttribute(hConsole, 160);
+        cout << "Sesiune de joc incheiata.                                                                           ";
+        SetConsoleTextAttribute(hConsole, 7);
+    }
+}
